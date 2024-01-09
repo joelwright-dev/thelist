@@ -1,47 +1,49 @@
-import Button from "@/components/Button";
-import * as heroicons from "@heroicons/react/24/solid";
-import prisma from "../lib/prisma";
+import Head from 'next/head';
+import { MantineProvider, AppShell, Burger, Group, Skeleton, Title, NavLink } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { theme } from '../theme';
+import { IconCake, IconCamera, IconHome, IconVideo } from '@tabler/icons-react';
 
-export async function getStaticProps() {
-  const categories = await prisma.category.findMany();
-  const items = await prisma.item.findMany();
+export default function Navbar({children, categories}) {
+    const [opened, { toggle }] = useDisclosure();
 
-  console.log(categories);
-  console.log(items);
-  console.log(prisma);
-
-  return {
-    props: { categories, items, prisma },
-  };
-}
-
-export default function Navbar({ children, categories, items, prisma }) {
-  console.log(categories, items, prisma);
-  return (
-    <div className="flex bg-gradient-to-br from-neutral-900 via-zinc-900 to-neutral-800 h-full">
-      <div className="p-5 w-48 h-full isolate aspect-video w-96 border-r border-neutral-600 bg-white/10 shadow-lg ring-1 ring-black/5 backdrop-blur-xl flex flex-col gap-5">
-        <div className="flex items-center gap-3">
-          <heroicons.ListBulletIcon className="text-neutral-900 h-8 bg-white rounded-lg p-1" />
-          <h1 className="text-xl text-white font-bold">The List</h1>
-        </div>
-        {/* {categories.map((category) => {
-          <Button
-            href={category.id}
-            text={category.name}
-            icon={category.icon}
-          />;
-        })} */}
-        <Button
-          href="new/category"
-          text="New Category"
-          icon={
-            <heroicons.FolderPlusIcon className="text-sky-200 h-8 bg-sky-500 rounded-lg p-1" />
-          }
-        />
-      </div>
-      <div className="overflow-y-scroll w-full p-5 scrollbar scrollbar-thin scrollbar-thumb-sky-500">
-        {children}
-      </div>
-    </div>
-  );
+    return (
+        <MantineProvider theme={theme}>
+            <Head>
+                <title>Mantine Template</title>
+                <meta
+                name="viewport"
+                content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
+                />
+                <link rel="shortcut icon" href="/favicon.svg" />
+            </Head>
+            <AppShell
+                header={{ height: 60 }}
+                navbar={{ width: 300, breakpoint: 'sm', collapsed: { mobile: !opened } }}
+                padding="md"
+            >
+                <AppShell.Header>
+                <Group h="100%" px="md">
+                    <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
+                    <Title>The List</Title>
+                </Group>
+                </AppShell.Header>
+                <AppShell.Navbar p="md">
+                    <NavLink href={`/`} label="Home" leftSection={<IconHome size="1rem" stroke={1.5}/>}/>
+                    {categories.map((category) => (
+                        <NavLink href={`/category/${category.id}`} label={category.name} leftSection={
+                            category.icon == "IconCake" ? <IconCake size="1rem" stroke={1.5}/> : (
+                                category.icon == "IconCamera" ? <IconCamera size="1rem" stroke={1.5}/> : (
+                                    category.icon == "IconVideo" ? <IconVideo size="1rem" stroke={1.5}/> : <></>
+                                )
+                            )
+                        }/>
+                    ))}
+                </AppShell.Navbar>
+                <AppShell.Main>
+                    {children}
+                </AppShell.Main>
+            </AppShell>
+        </MantineProvider>
+    )
 }
