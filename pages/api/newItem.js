@@ -12,5 +12,11 @@ export default async function handle(req, res) {
         }
     })
 
-    res.send({status: 200})
+    const items = await prisma.item.findMany({
+        where: {
+            categoryId: req.body.id
+        }
+    })
+
+    res.send({status: 200, message: JSON.stringify(items)})
 }

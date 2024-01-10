@@ -2,7 +2,7 @@ import Head from 'next/head';
 import { MantineProvider, AppShell, Burger, Group, Skeleton, Title, NavLink } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { theme } from '../theme';
-import { IconCake, IconCamera, IconHome, IconVideo } from '@tabler/icons-react';
+import { IconCake, IconCamera, IconHome, IconPlus, IconVideo, IconHeart } from '@tabler/icons-react';
 
 export default function Navbar({children, categories}) {
     const [opened, { toggle }] = useDisclosure();
@@ -34,11 +34,14 @@ export default function Navbar({children, categories}) {
                         <NavLink href={`/category/${category.id}`} label={category.name} leftSection={
                             category.icon == "IconCake" ? <IconCake size="1rem" stroke={1.5}/> : (
                                 category.icon == "IconCamera" ? <IconCamera size="1rem" stroke={1.5}/> : (
-                                    category.icon == "IconVideo" ? <IconVideo size="1rem" stroke={1.5}/> : <></>
+                                    category.icon == "IconVideo" ? <IconVideo size="1rem" stroke={1.5}/> : (
+                                        category.icon == "IconHeart" ? <IconHeart size="1rem" stroke={1.5}/> : <></>
+                                    )
                                 )
                             )
                         }/>
                     ))}
+                    <NavLink href={`/category/new`} label="New Category" leftSection={<IconPlus size="1rem" stroke={1.5}/>}/>
                 </AppShell.Navbar>
                 <AppShell.Main>
                     {children}

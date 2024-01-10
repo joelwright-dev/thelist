@@ -1,8 +1,8 @@
 import prisma from "@/lib/prisma"
 
 import Navbar from "@/components/Navbar";
-import { ActionIcon, Button, Checkbox, Input, Stack, Table, Group } from "@mantine/core";
-import { IconPlus, IconTrash, IconX, IconCheck, IconPencil } from "@tabler/icons-react";
+import { ActionIcon, Button, Checkbox, Input, Stack, Table, Group, NavLink } from "@mantine/core";
+import { IconPlus, IconTrash, IconX, IconCheck, IconPencil, IconCake, IconCamera, IconVideo, IconHeart } from "@tabler/icons-react";
 import { useState } from "react";
 import { useForm } from "@mantine/form";
 
@@ -17,19 +17,33 @@ export async function getServerSideProps({ params }) {
         }
     })
 
-    console.log(items, categories)
+    const category = await prisma.category.findUnique({
+        where: {
+            id: Number(id)
+        }
+    })
+
+    if(!category) {
+        return {
+            notFound: true
+        }
+    }
 
     return { 
         props: { 
             items: JSON.parse(JSON.stringify(items)),
             categories: JSON.parse(JSON.stringify(categories)),
+            category: JSON.parse(JSON.stringify(category)),
             id: JSON.parse(JSON.stringify(id))
         }
     }
 }
 
-export default function Page({ items, categories, id }) {
+export default function Page({ items, categories, category, id }) {
     const [addNew, setAddNew] = useState(false)
+    const [listItems, setListItems] = useState(items)
+
+    console.log(category)
 
     const form = useForm({
         initialValues: {
@@ -50,19 +64,29 @@ export default function Page({ items, categories, id }) {
                             "Content-Type": "application/json"
                         },
                         body: JSON.stringify(values)
-                    }).then((response) => {console.log(response)})
+                    }).then((response) => response.json()).then((data) => {
+                        setListItems(JSON.parse(data.message))
+                        setAddNew(false)
+                    })
                 })}>
                     <Table>
-                        <Table.Thead>  
+                        <Table.Thead>
                             <Table.Tr>
-                                <Table.Th>Name</Table.Th>
+                                <Table.Th><NavLink label={category.name} leftSection={
+                                        category.icon == "IconCake" ? <IconCake size="1rem" stroke={1.5}/> : (
+                                            category.icon == "IconCamera" ? <IconCamera size="1rem" stroke={1.5}/> : (
+                                                category.icon == "IconVideo" ? <IconVideo size="1rem" stroke={1.5}/> : (
+                                                    category.icon == "IconHeart" ? <IconHeart size="1rem" stroke={1.5}/> : <></>
+                                                )
+                                            )
+                                        )
+                                    } variant="filled" active></NavLink></Table.Th>
                                 <Table.Th>Description</Table.Th>
                                 <Table.Th>Status</Table.Th>
-                                <Table.Th>Actions</Table.Th>
                             </Table.Tr>
                         </Table.Thead>
                         <Table.Tbody>
-                            {items.map((item) => (
+                            {listItems.map((item) => (
                                 <Table.Tr key={item.id}>
                                     <Table.Td>{item.name}</Table.Td>
                                     <Table.Td>{item.description}</Table.Td>
@@ -76,8 +100,10 @@ export default function Page({ items, categories, id }) {
                                                     headers: {
                                                         "Content-Type": "application/json"
                                                     },
-                                                    body: JSON.stringify({id: item.id})
-                                                }).then((response) => {console.log(response)})
+                                                    body: JSON.stringify({id: item.id, categoryId: item.categoryId})
+                                                }).then((response) => response.json()).then((data) => {
+                                                    setListItems(JSON.parse(data.message))
+                                                })
                                             }}><IconTrash size="1rem" stroke={1.5}/></ActionIcon>
                                         </Group>
                                     </Table.Td>
